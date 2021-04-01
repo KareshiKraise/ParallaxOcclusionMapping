@@ -1,0 +1,68 @@
+#version 430 core
+
+layout(location = 0) in vec3 vertexPosition;
+layout(location = 1) in vec2 vertexUV;
+layout(location = 2) in vec3 vertexNormal;
+layout(location = 4) in vec3 Tangent; 
+//out vec4 vPos;
+
+
+uniform mat4 P;
+uniform mat4 V;
+uniform mat4 M;
+
+uniform mat3 NormalMatrix;
+uniform vec3 CameraPos;
+uniform vec3 LightDirection;
+
+
+out vec2 UV;
+out vec3 toLightinTan;
+out vec3 toCamerainTan;
+
+
+
+//out vec3 ViewDir;
+//out vec3 lightDir;
+//out vec3 vPos;
+//out vec3 Normal;
+
+
+
+
+
+void main(void)
+{
+
+	
+	//world space
+	vec4 worldPosition = M * vec4(vertexPosition, 1);
+	vec3 worldNormal = normalize(NormalMatrix * vertexNormal);
+	vec3 worldTangent = normalize(NormalMatrix * Tangent);
+
+	//to camera and light
+	vec3 worldDirToLight = normalize(LightDirection - worldPosition.xyz);
+	vec3 worldDirToCam = normalize(CameraPos - worldPosition.xyz);
+
+	//bitangent
+	vec3 worldBitangent = cross(worldNormal, worldTangent);
+
+	//from light to tang
+	toCamerainTan = vec3(
+					dot(worldDirToCam, worldTangent),
+					dot(worldDirToCam, worldBitangent),
+					dot(worldDirToCam, worldNormal));
+
+	toLightinTan = vec3(
+					dot(worldDirToLight, worldTangent),
+					dot(worldDirToLight, worldBitangent),
+					dot(worldDirToLight, worldNormal));
+
+
+	UV = vertexUV;
+
+	gl_Position = P * V * worldPosition;
+		
+	
+	
+}
